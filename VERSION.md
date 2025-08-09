@@ -19,3 +19,4 @@
 | Package Manager | pip |  |
 | Helm Chart | hello-world | 0.1.0 |
 | AI Model | gemini-1.5-flash |  |
+| Docker Image | hello-world | latest |
