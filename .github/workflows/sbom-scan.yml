@@ -34,10 +34,16 @@ jobs:
       - name: Install dependencies
         run: pip install google-generativeai
       
+      - name: Debug directories
+        run: |
+          ls -la
+          ls -la sbom_ai_scanner/
+      
       - name: Run SBOM analysis
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          cp repomix-output.txt sbom_ai_scanner/
           cd sbom_ai_scanner
           python llm_check.py
           cp VERSION.md ../
