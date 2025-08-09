@@ -38,6 +38,7 @@ jobs:
         run: |
           ls -la
           ls -la sbom_ai_scanner/
+          find sbom_ai_scanner/ -name "*.py"
       
       - name: Run SBOM analysis
         env:
@@ -45,6 +46,7 @@ jobs:
         run: |
           cp repomix-output.txt sbom_ai_scanner/
           cd sbom_ai_scanner
+          ls -la
           python llm_check.py
           cp VERSION.md ../
 
