@@ -23,7 +23,7 @@ jobs:
       - name: Create repomix output
         uses: yamadashy/repomix/.github/actions/repomix@main
         with:
-          input: demo_flask_app
+          directories: demo_flask_app
           output: repomix-output.txt
           style: plain
           compress: false
