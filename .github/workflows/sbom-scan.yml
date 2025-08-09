@@ -8,67 +8,20 @@ on:
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout demo_flask_app
         uses: actions/checkout@v4
         with:
           path: demo_flask_app
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create SBOM scanner script
-        run: |
-          cat > llm_check.py << 'EOF'
-          #!/usr/bin/env python3
-          import os
-          import sys
-          from pathlib import Path
-          import google.generativeai as genai
-          
-          def main():
-              repo_file = Path("repomix-output.txt")
-              output_file = Path("VERSION.md")
-              api_key = os.getenv("GEMINI_API_KEY")
-          
-              if not api_key:
-                  print("Error: GEMINI_API_KEY environment variable not set.", file=sys.stderr)
-                  sys.exit(1)
-          
-              if not repo_file.exists():
-                  print(f"Error: {repo_file} does not exist.", file=sys.stderr)
-                  sys.exit(1)
-          
-              with open(repo_file, "r", encoding="utf-8") as f:
-                  repo_content = f.read()
-          
-              prompt = """You are a code analysis assistant.
-          Analyze the following repository contents and extract a list of tools, packages,
-          docker images, and other components used in the code, including their versions/tags.
-          Output the result in a table format with columns:
-          
-          Type | Name | Version/Tag
-          
-          Do not include any commentary or explanations — only the table.
-          Repository contents:
-          """ + repo_content
-          
-              genai.configure(api_key=api_key)
-              model = genai.GenerativeModel('gemini-1.5-flash')
-          
-              print("Querying Gemini AI...")
-              try:
-                  response = model.generate_content(prompt)
-                  result = response.text.strip()
-              except Exception as e:
-                  print(f"Error: Gemini API request failed: {e}", file=sys.stderr)
-                  sys.exit(1)
-          
-              with open(output_file, "w", encoding="utf-8") as f:
-                  f.write(result + "\n")
-          
-              print(f"Version list written to {output_file}")
-          
-          if __name__ == "__main__":
-              main()
-          EOF
+      - name: Checkout sbom_ai_scanner
+        uses: actions/checkout@v4
+        with:
+          repository: dsppun/sbom_ai_scanner
+          path: sbom_ai_scanner
 
       - name: Install repomix
         run: npm install -g repomix
@@ -87,7 +40,11 @@ jobs:
       - name: Run SBOM analysis
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python llm_check.py
+        run: |
+          cp repomix-output.txt sbom_ai_scanner/
+          cd sbom_ai_scanner
+          python llm_check.py
+          cp VERSION.md ../
 
       - name: Commit and push VERSION.md
         run: |
