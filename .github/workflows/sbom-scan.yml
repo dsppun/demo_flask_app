@@ -1,0 +1,48 @@
+name: Generate SBOM with AI Scanner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout demo_flask_app
+        uses: actions/checkout@v4
+        with:
+          path: demo_flask_app
+
+      - name: Checkout sbom_ai_scanner
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/sbom_ai_scanner
+          path: sbom_ai_scanner
+
+      - name: Create repomix output
+        uses: yamadashy/repomix/.github/actions/repomix@main
+        with:
+          input: demo_flask_app
+          output: repomix-output.txt
+          style: plain
+          compress: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: pip install google-generativeai
+      
+      - name: Run SBOM analysis
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python sbom_ai_scanner/llm_check.py
+
+      - name: Upload VERSION.md
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-report
+          path: VERSION.md
