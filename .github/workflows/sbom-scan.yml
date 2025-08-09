@@ -20,13 +20,11 @@ jobs:
           repository: ${{ github.repository_owner }}/sbom_ai_scanner
           path: sbom_ai_scanner
 
+      - name: Install repomix
+        run: npm install -g repomix
+      
       - name: Create repomix output
-        uses: yamadashy/repomix/.github/actions/repomix@main
-        with:
-          directories: demo_flask_app
-          output: repomix-output.txt
-          style: plain
-          compress: false
+        run: repomix demo_flask_app --output repomix-output.txt --style plain
 
       - name: Setup Python
         uses: actions/setup-python@v4
