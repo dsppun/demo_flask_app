@@ -43,7 +43,7 @@ jobs:
         run: |
           cp repomix-output.txt sbom_ai_scanner/
           cd sbom_ai_scanner
-          python llm_check.py
+          python sbom_scanner.py
           cp VERSION.md ../
 
       - name: Commit and push VERSION.md
